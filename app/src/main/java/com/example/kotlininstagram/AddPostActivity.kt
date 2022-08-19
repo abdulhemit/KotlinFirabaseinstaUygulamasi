@@ -25,6 +25,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 class AddPostActivity : AppCompatActivity() {
@@ -35,11 +36,13 @@ class AddPostActivity : AppCompatActivity() {
     private lateinit var db : FirebaseFirestore
     private lateinit var mAuth: FirebaseAuth
     private lateinit var storage: FirebaseStorage
+     var user: User? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddPostBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
         mAuth = Firebase.auth
         db = Firebase.firestore
         storage = Firebase.storage
@@ -48,6 +51,8 @@ class AddPostActivity : AppCompatActivity() {
             selectedimage(view)
         }
         binding.btnSave.setOnClickListener {
+            binding.progressbar.visibility = View.VISIBLE
+            binding.btnSave.visibility = View.INVISIBLE
             savepost()
         }
     }
@@ -62,15 +67,32 @@ class AddPostActivity : AppCompatActivity() {
                 val uploadPictureReference = imagereference.child("images").child(imageName)
                 uploadPictureReference.downloadUrl.let {
                     val downloadUrl = it.toString()
-                    val postHashmap = HashMap<String,Any>()
-                    postHashmap.put("downloadUrl",downloadUrl)
-                    postHashmap.put("PostName",binding.editText.text.toString())
-                    postHashmap.put("date",Timestamp.now())
-                    db.collection("user").add(postHashmap).addOnSuccessListener {
-                        Toast.makeText(this@AddPostActivity,"saved post",Toast.LENGTH_LONG).show()
-                        finish()
-                    }.addOnFailureListener {
-                        Toast.makeText(this@AddPostActivity,it.localizedMessage,Toast.LENGTH_LONG).show()
+                    val post = post(downloadUrl,binding.editText.text.toString(),Timestamp.now().toString())
+                    val userId = mAuth.currentUser?.uid.toString()
+                   val gelenuser=  db.collection("user").document(userId)
+                       gelenuser.addSnapshotListener { value, error ->
+                        if (error != null){
+                            Toast.makeText(this@AddPostActivity,error.localizedMessage.toString(),Toast.LENGTH_LONG).show()
+                        }else {
+                            if (value != null){
+                                val email = value.get("email") as String
+                                val name = value.get("name") as String
+                                val password = value.get("password") as String
+                                user = User(userId,name,email,password,post)
+
+                                user?.let {
+                                    db.collection("user").document(userId).set(user!!).addOnSuccessListener {
+                                        // .add(user).addOnSuccessListener {
+                                        Toast.makeText(this@AddPostActivity,"saved post",Toast.LENGTH_LONG).show()
+                                         binding.progressbar.visibility = View.GONE
+                                          binding.btnSave.visibility = View.VISIBLE
+                                        finish()
+                                    }.addOnFailureListener {
+                                        Toast.makeText(this@AddPostActivity,it.localizedMessage,Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }.addOnFailureListener{

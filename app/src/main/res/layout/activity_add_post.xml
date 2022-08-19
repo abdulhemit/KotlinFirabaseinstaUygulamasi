@@ -34,7 +34,6 @@
 
     <Button
         android:id="@+id/btn_save"
-        android:onClick="savepost"
         android:layout_width="210dp"
         android:layout_height="59dp"
         android:layout_marginTop="70dp"
@@ -45,5 +44,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_text" />
+
+    <ProgressBar
+        android:id="@+id/progressbar"
+        android:layout_width="210dp"
+        android:layout_height="60dp"
+        app:layout_constraintTop_toTopOf="@id/btn_save"
+        android:background="@drawable/btn_background"
+        android:indeterminateTint="@color/white"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

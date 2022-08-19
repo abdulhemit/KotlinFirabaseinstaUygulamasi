@@ -15,6 +15,7 @@ class SingUpActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySingUpBinding
     private lateinit var mAuth: FirebaseAuth
     private lateinit var db : FirebaseFirestore
+    lateinit var user : User
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,15 +38,19 @@ class SingUpActivity : AppCompatActivity() {
         }
 
     }
-    private fun singupUserToFirabase( name:String, email:String,password:String){
+     private fun singupUserToFirabase( name:String, email:String,password:String){
         mAuth.createUserWithEmailAndPassword(email,password).addOnSuccessListener {
             // kullaniciyi kaytetmek
             val uid = mAuth.uid
-            val userHashmap =HashMap<String,Any>()
+            val post = post(null,null,null)
+            val user = User(uid,name,email,password,post)
+            /*val userHashmap =HashMap<String,Any>()
             userHashmap.put("name",name)
             userHashmap.put("email",email)
             userHashmap.put("uid",uid.toString())
-            db.collection("user").add(userHashmap).addOnSuccessListener {
+             */
+            db.collection("user").document(uid.toString()).set(user).addOnSuccessListener {
+            //add(user).addOnSuccessListener {
                 Toast.makeText(this@SingUpActivity,"user saved",Toast.LENGTH_LONG).show()
             }.addOnFailureListener {
                 Toast.makeText(this@SingUpActivity,it.localizedMessage,Toast.LENGTH_LONG).show()
